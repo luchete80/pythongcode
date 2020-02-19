@@ -14,6 +14,8 @@ for num in data:
     lb.insert(END,num)
 lb.place(x=250, y=150)
 
+
+
 v0=IntVar()
 v0.set(1)
 r1=Radiobutton(window, text="male", variable=v0,value=1)

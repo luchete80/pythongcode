@@ -1,0 +1,11 @@
+Entradas
+paso
+ancho
+largo
+***
+velocidad
+tramo de cambio
+velocidad lenta
+numero de pasadas
+
+El 0,0 esta en el centro
