@@ -5,18 +5,55 @@ from tkinter.ttk import Combobox
 window=Tk()
 linea_g=10
 
-filelbl = Label(window, text="Archivo")
-filelbl.grid(column=0, row=0)	
-textField = Entry(window, width=50)
-textField.grid(column=1, row=0)
+filelbl = Label(window, text="Archivo", width=15,justify=LEFT)
+filelbl.grid(column=1, row=0)	
+textField = Entry(window, width=15)
+textField.grid(column=2, row=0)
+textField.insert(0,"test.txt")
 #textField.pack(fill=NONE, side=TOP)
 
-lbl = Label(window, text="Largo")
-lbl.grid(column=0, row=1)
-largoField = Entry(window, width=50)
+lbl = Label(window, text="Largo [mm]")
+lbl.grid(column=1, row=1)
+largoField = Entry(window, width=10)
 largoField.insert(0, "100.")
-largoField.grid(column=1, row=1)
+largoField.grid(column=2, row=1)
+
+lbl = Label(window, text="Ancho [mm]")
+lbl.grid(column=1, row=2)
+anchoField = Entry(window, width=10)
+anchoField.insert(0, "12.")
+anchoField.grid(column=2, row=2)
 #largoField.pack(fill=NONE, side=TOP)
+
+lbl = Label(window, text="Paso [mm]")
+lbl.grid(column=1, row=3)
+pasoField = Entry(window, width=10)
+pasoField.insert(0, "4.0")
+pasoField.grid(column=2, row=3)
+
+lbl = Label(window, text="Pasadas [mm]")
+lbl.grid(column=1, row=4)
+npasField = Entry(window, width=10)
+npasField.insert(0, "10")
+npasField.grid(column=2, row=4)
+
+lbl = Label(window, text="Paso Z [mm]")
+lbl.grid(column=1, row=5)
+pasoZField = Entry(window, width=10)
+pasoZField.insert(0, "2.0")
+pasoZField.grid(column=2, row=5)
+
+lbl = Label(window, text="Long lenta [mm]")
+lbl.grid(column=1, row=6)
+pasoZField = Entry(window, width=10)
+pasoZField.insert(0, "10.0")
+pasoZField.grid(column=2, row=6)
+
+lbl = Label(window, text="V Lenta [%]")
+lbl.grid(column=1, row=7)
+pasoZField = Entry(window, width=10)
+pasoZField.insert(0, "50")
+pasoZField.grid(column=2, row=7)
 
 #********** ARCHIVO *************
 
@@ -49,36 +86,55 @@ def lin2str(l):
 def save(lin):
     lin=10
     largo=float(largoField.get())
-    paso=4.0
-    ancho=12.0
-    npasadas=10
+    paso =float(pasoField.get())
+    pasoZ=float(pasoZField.get())
+    ancho=float(anchoField.get())
+    npasadas=int(npasField.get())
     npasos=int(largo/paso)
+    print("Largo: %.2f, Ancho: %.2f" %(largo,ancho))
     print("Pasos: %d" %npasos)
     #with open(textField.get(), 'w') as file:
 	#with open(textField.get(), 'w') as file:
-    f= open("test.txt","w+")
+    f= open(textField.get(),"w+")
 	#file.write(txt.GetValue())
     f.write(lin2str(lin)+" G21\n")
     lin=lin+10
     #lin=linea() #No puedo meter la funcion 
     f.write(lin2str(lin)+" G40 G90\n")
     lin=lin+10
+    f.write(lin2str(lin)+" F1\n")
+    lin=lin+10
+    f.write(lin2str(lin)+" M4S9500\n")
+    lin=lin+10	
+    f.write(lin2str(lin)+" G00\n")
+    lin=lin+10	
     f.write(lin2str(lin)+" T02 M06 G43 H2\n")
-    x=0.
+    z=0.5	
     for p in range(npasadas):
+	    #Veo para que lado va la pasada   
+        if p%2==0: #Pasada par
+    	    fs=1.0
+        else:
+            fs=-1.0
+        x=-fs*largo/2.0	
+        y=-fs*ancho/2.0
+        f.write(lin2str(lin)+" X%.4f Y%.4f\n" % (x,y))
+        lin=lin+10	
+        f.write(lin2str(lin)+" Z%.4f \n" % (z))
+        lin=lin+10
         f.write(lin2str(lin)+" M11P13 \n")
         for i in range(npasos):
-            y=-ancho/2.
-            f.write(lin2str(lin)+" Y%.2f \n" % (y))
-            lin=lin+10
-            x=x+paso/2.
-            f.write(lin2str(lin)+" X%.2f \n" % (x))
-            lin=lin+10
             y=ancho/2.
-            f.write(lin2str(lin)+" Y%.2f \n" % (y))
+            f.write(lin2str(lin)+" Y%.4f \n" % (y))
             lin=lin+10
-            x=x+paso/2.
-            f.write(lin2str(lin)+" X%.2f \n" % (x))	
+            x=x+fs*paso/2.
+            f.write(lin2str(lin)+" X%.4f \n" % (x))
+            lin=lin+10
+            y=-ancho/2.
+            f.write(lin2str(lin)+" Y%.4f \n" % (y))
+            lin=lin+10
+            x=x+fs*paso/2.
+            f.write(lin2str(lin)+" X%.4f \n" % (x))	
             lin=lin+10
 			# create text field
         f.write(lin2str(lin)+"( ******************* FIN DE PASADA ***********************)\n")
@@ -87,32 +143,15 @@ def save(lin):
         lin=lin+10
         f.write(lin2str(lin)+" G4 P60000\n")
         lin=lin+10
+        z=z+pasoZ
     f.close()
 
 		
-#Generar!
-#Ver si el archivo esta abierto
-
-# v0=IntVar()
-# v0.set(1)
-# r1=Radiobutton(window, text="male", variable=v0,value=1)
-# r2=Radiobutton(window, text="female", variable=v0,value=2)
-# r1.place(x=100,y=50)
-# r2.place(x=180, y=50)
-
-
-                
-# v1 = IntVar()
-# v2 = IntVar()
-# C1 = Checkbutton(window, text = "Cricket", variable = v1)
-# C2 = Checkbutton(window, text = "Tennis", variable = v2)
-# C1.place(x=100, y=100)
-# C2.place(x=180, y=100)
-
-b = Button(window, text="Generar", width=10, command=save(linea_g))
-b.grid(column=1, row=10)
+#Si no se coloca lambda no funciona
+b = Button(window, text="Generar", width=10, command=lambda:save(linea_g))
+b.grid(column=3, row=10)
 #b.pack()
 
 window.title('Generador Codigo G')
-window.geometry("400x300+10+10")
+window.geometry("400x200+10+10")
 window.mainloop()
